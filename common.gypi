@@ -143,7 +143,7 @@
           ],
         },
         'defines': [ 'DEBUG', '_DEBUG' ],
-        'cflags': [ '-g', '-O0' ],
+        'cflags': [ '-g', '-O0','-pg', '-finstrument-functions' ],
         'conditions': [
           ['OS in "aix os400"', {
             'cflags': [ '-gxcoff' ],
@@ -188,7 +188,7 @@
             }],
           ],
         },
-        'cflags': [ '-O3' ],
+        'cflags': [ '-O3', '-pg', '-finstrument-functions' ],
         'conditions': [
           ['enable_lto=="true"', {
             'cflags': ['<(lto)'],

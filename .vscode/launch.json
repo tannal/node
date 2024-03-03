@@ -1,15 +1,38 @@
 {
     "configurations": [
-    {
-        "type": "lldb",
-        "request": "launch",
-        "name": "Launch",
-        "program": "${workspaceFolder}/node",
-        "args": ["local/task.js"],
-        "env": {
-            "NODE_DEBUG": "timer",
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach to PID",
+            "target": "52421",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText"
         },
-        "cwd": "${workspaceFolder}"
-    }
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Launch",
+            "program": "${workspaceFolder}/node",
+            "args": [
+                "local/task.js"
+            ],
+            "env": {
+                "NODE_DEBUG": "timer",
+            },
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "dns lookup",
+            "program": "${workspaceFolder}/node",
+            "args": [
+                "local/fetch.js"
+            ],
+            "env": {
+                "NODE_DEBUG": "timer",
+            },
+            "cwd": "${workspaceFolder}"
+        }
     ]
 }
