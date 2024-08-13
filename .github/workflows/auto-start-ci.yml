@@ -1,6 +1,7 @@
 name: Auto Start CI
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs every five minutes (fastest the scheduler can run). Five minutes is
     # optimistic, it can take longer to run.
