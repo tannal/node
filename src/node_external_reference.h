@@ -10,6 +10,8 @@
 
 namespace node {
 
+using CFunctionFastCallbackReturningBool = bool (*)(const v8::FastOneByteString&,
+                                                    v8::FastApiCallbackOptions&);
 using CFunctionCallbackWithOneByteString =
     uint32_t (*)(v8::Local<v8::Value>, const v8::FastOneByteString&);
 using CFunctionCallback = void (*)(v8::Local<v8::Value> receiver);

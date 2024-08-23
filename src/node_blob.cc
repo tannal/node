@@ -442,14 +442,19 @@ void Blob::StoreDataObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 // TODO(@anonrig): Add V8 Fast API to the following function
-void Blob::RevokeObjectURL(const FunctionCallbackInfo<Value>& args) {
+#include "v8-fast-api-calls.h"
+#include "node_external_reference.h"
+
+
+
+static void SlowRevokeObjectURL(const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_GE(args.Length(), 1);
   CHECK(args[0]->IsString());
   Realm* realm = Realm::GetCurrent(args);
   BlobBindingData* binding_data = realm->GetBindingData<BlobBindingData>();
-  Isolate* isolate = realm->isolate();
+  v8::Isolate* isolate = realm->isolate();
 
-  Utf8Value input(isolate, args[0].As<String>());
+  v8::String::Utf8Value input(isolate, args[0].As<v8::String>());
   auto out = ada::parse<ada::url_aggregator>(input.ToStringView());
 
   if (!out) {
@@ -466,6 +471,43 @@ void Blob::RevokeObjectURL(const FunctionCallbackInfo<Value>& args) {
       binding_data->revoke_data_object(id);
     }
   }
+}
+
+static bool FastRevokeObjectURL(const v8::FastOneByteString& url_string,
+                                v8::FastApiCallbackOptions& options) {
+  // This function can't do the full logic of SlowRevokeObjectURL due to Fast API limitations
+  // So we'll do a quick check and fallback to slow path if needed
+
+  if (url_string.length() == 0) {
+    options.fallback = true;
+    return false;
+  }
+
+  // Quick check if the URL might be valid (starts with "blob:")
+  if (url_string.length() < 5 || url_string[0] != 'b' || url_string[1] != 'l' ||
+      url_string[2] != 'o' || url_string[3] != 'b' || url_string[4] != ':') {
+    options.fallback = true;
+    return false;
+  }
+
+  // If it passes the quick check, we'll fallback to the slow path to do the full processing
+  options.fallback = true;
+  return true;
+}
+
+v8::CFunction fast_revoke_object_url(v8::CFunction::Make(FastRevokeObjectURL));
+
+static void Initialize(v8::Local<v8::Object> target,
+                       v8::Local<v8::Value> unused,
+                       v8::Local<v8::Context> context,
+                       void* priv) {
+  SetFastMethod(context, target, "revokeObjectURL", SlowRevokeObjectURL, &fast_revoke_object_url);
+}
+
+void RegisterExternalReferences(ExternalReferenceRegistry* registry) {
+  registry->Register(SlowRevokeObjectURL);
+  registry->Register(FastRevokeObjectURL);
+  registry->Register(fast_revoke_object_url.GetTypeInfo());
 }
 
 void Blob::GetDataObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -581,6 +623,9 @@ void Blob::RegisterExternalReferences(ExternalReferenceRegistry* registry) {
 }
 
 }  // namespace node
+
+NODE_BINDING_CONTEXT_AWARE_INTERNAL(blob, node::blob::Initialize);
+NODE_BINDING_EXTERNAL_REFERENCE(blob, node::blob::RegisterExternalReferences);
 
 NODE_BINDING_CONTEXT_AWARE_INTERNAL(blob,
                                     node::Blob::CreatePerContextProperties)
