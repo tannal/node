@@ -51,6 +51,7 @@
   V(fs)                                                                        \
   V(fs_dir)                                                                    \
   V(fs_event_wrap)                                                             \
+  V(hash)                                                             \
   V(heap_utils)                                                                \
   V(http2)                                                                     \
   V(http_parser)                                                               \

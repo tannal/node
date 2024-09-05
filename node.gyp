@@ -102,6 +102,7 @@
       'src/node_binding.cc',
       'src/node_blob.cc',
       'src/node_buffer.cc',
+      'src/node_hash.cc',
       'src/node_builtins.cc',
       'src/node_config.cc',
       'src/node_constants.cc',
